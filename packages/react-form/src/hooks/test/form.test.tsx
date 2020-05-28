@@ -27,9 +27,11 @@ describe('useForm', () => {
   function ProductForm({
     data,
     onSubmit,
+    undirtyAfterSubmit = false,
   }: {
     data: SimpleProduct;
     onSubmit?: SubmitHandler<SimpleProduct>;
+    undirtyAfterSubmit?: boolean;
   }) {
     const title = useField({
       value: data.title,
@@ -56,6 +58,7 @@ describe('useForm', () => {
     const {submit, submitting, dirty, reset, submitErrors} = useForm({
       fields: {title, description, defaultVariant, variants},
       onSubmit: onSubmit as any,
+      undirtyAfterSubmit,
     });
 
     return (
@@ -96,17 +99,13 @@ describe('useForm', () => {
     it('dirty state is false when no field has been changed', () => {
       const wrapper = mount(<ProductForm data={fakeProduct()} />);
 
-      wrapper
-        .find(TextField, {label: 'title'})!
-        .trigger('onChange', 'Floobogs, the shoe for ogres');
-
       expect(wrapper).toContainReactComponent('button', {
         type: 'button',
-        disabled: false,
+        disabled: true,
       });
       expect(wrapper).toContainReactComponent('button', {
         type: 'submit',
-        disabled: false,
+        disabled: true,
       });
     });
 
@@ -332,6 +331,148 @@ describe('useForm', () => {
         .prop('onClick');
 
       expect(initialSubmitHandler).toBe(newSubmitHandler);
+    });
+
+    describe('undirty', () => {
+      it('does not undirty fields after successful submit by default', async () => {
+        const promise = Promise.resolve(submitSuccess());
+        const wrapper = mount(<ProductForm data={fakeProduct()} />);
+
+        wrapper
+          .find(TextField, {label: 'title'})!
+          .trigger('onChange', 'tortoritos, the chip for turtles!');
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+
+        wrapper
+          .find('button', {type: 'submit'})!
+          .trigger('onClick', clickEvent());
+        await wrapper.act(async () => {
+          await promise;
+        });
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+      });
+
+      it('does undirty fields after successful submit if undirtyAfterSubmit is true', async () => {
+        const promise = Promise.resolve(submitSuccess());
+        const wrapper = mount(
+          <ProductForm data={fakeProduct()} undirtyAfterSubmit />,
+        );
+
+        wrapper
+          .find(TextField, {label: 'title'})!
+          .trigger('onChange', 'tortoritos, the chip for turtles!');
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+
+        wrapper
+          .find('button', {type: 'submit'})!
+          .trigger('onClick', clickEvent());
+        await wrapper.act(async () => {
+          await promise;
+        });
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: true,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: true,
+        });
+      });
+
+      it('does not undirty fields after successful submit if undirtyAfterSubmit is false', async () => {
+        const promise = Promise.resolve(submitSuccess());
+        const wrapper = mount(
+          <ProductForm data={fakeProduct()} undirtyAfterSubmit={false} />,
+        );
+
+        wrapper
+          .find(TextField, {label: 'title'})!
+          .trigger('onChange', 'tortoritos, the chip for turtles!');
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+
+        wrapper
+          .find('button', {type: 'submit'})!
+          .trigger('onClick', clickEvent());
+        await wrapper.act(async () => {
+          await promise;
+        });
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+      });
+
+      it('does not undirty fields after if undirtyAfterSubmit is true but submit is unsuccessful', async () => {
+        const promise = Promise.resolve(submitFail());
+        const wrapper = mount(
+          <ProductForm data={fakeProduct()} undirtyAfterSubmit={false} />,
+        );
+
+        wrapper.find(TextField, {label: 'title'})!.trigger('onChange', '');
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+
+        wrapper
+          .find('button', {type: 'submit'})!
+          .trigger('onClick', clickEvent());
+        await wrapper.act(async () => {
+          await promise;
+        });
+
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'button',
+          disabled: false,
+        });
+        expect(wrapper).toContainReactComponent('button', {
+          type: 'submit',
+          disabled: false,
+        });
+      });
     });
   });
 
