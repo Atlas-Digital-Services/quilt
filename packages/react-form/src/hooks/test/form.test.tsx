@@ -27,7 +27,7 @@ describe('useForm', () => {
   function ProductForm({
     data,
     onSubmit,
-    undirtyAfterSubmit = false,
+    undirtyAfterSubmit,
   }: {
     data: SimpleProduct;
     onSubmit?: SubmitHandler<SimpleProduct>;
