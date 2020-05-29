@@ -197,7 +197,7 @@ describe('useForm', () => {
       });
     });
 
-    it('validates all fields with their latest values before submitting and bails out if any fail', async () => {
+    it('validates all fields with their latest values before submitting and bails out if any fail', () => {
       const submitSpy = jest.fn(() => Promise.resolve(submitSuccess()));
       const product = {
         ...fakeProduct(),
@@ -216,7 +216,7 @@ describe('useForm', () => {
       });
     });
 
-    it('validates list fields with their latest values before submitting and bails out if any fail', async () => {
+    it('validates list fields with their latest values before submitting and bails out if any fail', () => {
       const submitSpy = jest.fn(() => Promise.resolve(submitSuccess()));
       const product = fakeProduct();
       const wrapper = mount(
