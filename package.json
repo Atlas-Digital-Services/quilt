@@ -83,7 +83,9 @@
     "tslib": "^1.9.3",
     "typescript": "^3.7.5"
   },
-  "dependencies": {},
+  "dependencies": {
+    "webpack-virtual-modules": "^0.2.2"
+  },
   "resolutions": {
     "@types/react": "16.9.19",
     "@types/react-dom": "16.9.5"

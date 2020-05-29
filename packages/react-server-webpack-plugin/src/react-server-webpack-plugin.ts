@@ -14,6 +14,7 @@ export interface Options {
 enum Entrypoint {
   Client = 'client',
   Server = 'server',
+  Error = 'error',
 }
 
 export const HEADER = `
@@ -62,6 +63,17 @@ export class ReactServerPlugin {
       modules[file] = serverSource(this.options);
     }
 
+    // if Error component exists create a virtual entrypoint for errors
+    if (errorSSRComponentExists(this.options, compiler)) {
+      console.log('~~~~~ERROR ENTRYPOINTS EXIST - CREATING VIRTUAL MODULE');
+      const file = join(basePath, `${Entrypoint.Error}.entry.client.js`);
+      modules[file] = errorClientSource();
+    } else {
+      console.log('~~~~~ERROR ENTRYPOINTS DOES NOT EXIST - DO NOTHING');
+    }
+
+    console.log('~~~~~~~~~~~~~~~~~VIRTUAL MODULES: ', modules);
+
     return modules;
   }
 }
@@ -84,6 +96,8 @@ function serverSource(options: Options) {
     import {createServer} from '@shopify/react-server';
 
     import App from 'index';
+    // TODO: Check if 'error' even exists
+    import Error from 'error';
 
     process.on('uncaughtException', logError);
     process.on('unhandledRejection', logError);
@@ -100,11 +114,20 @@ function serverSource(options: Options) {
       });
     }
 
+    const renderError = (ctx) => {
+      return React.createElement(Error, {
+        url: ctx.request.URL,
+        data: ctx.state.quiltData,
+      });
+    }
+
+    console.log('~~~~~~~~~ from react-server-webpack-plugin');
     const app = createServer({
       port: ${serverPort},
       ip: ${serverIp},
       assetPrefix: ${serverAssetPrefix},
       render,
+      renderError,
     });
 
     export default app;
@@ -129,6 +152,24 @@ function clientSource() {
   `;
 }
 
+function errorClientSource() {
+  return `
+    ${HEADER}
+    import React from 'react';
+    import ReactDOM from 'react-dom';
+    import {showPage} from '@shopify/react-html';
+    import Error from 'error';
+
+    const appContainer = document.getElementById('app');
+    ReactDOM.hydrate(React.createElement(Error), appContainer);
+    showPage();
+  `;
+}
+
+function errorSSRComponentExists(options: Options, compiler: Compiler) {
+  return !noSourceExists(Entrypoint.Error, options, compiler);
+}
+
 function noSourceExists(
   entry: Entrypoint,
   options: Options,
@@ -147,3 +188,28 @@ function noSourceExists(
   const filenameRegex = new RegExp(`^${entry}.[jt]sx?$`);
   return dirFiles.find(file => filenameRegex.test(file)) == null;
 }
+
+// function patchFsVirtualModules(basePath: string, modules: string[], fs: any) {
+//   fs.readdirSync = (...args) => {
+//     const results = fs.readdirSync(...args);
+//     if (resolve(args[0]) === resolve(basePath)) {
+//       return results.concat(modules);
+//     }
+//     return results;
+//   };
+
+//   fs.readdir = (dir, cb) => {
+//     fs.readdir(dir, (error, results) => {
+//       if (error) {
+//         cb(error);
+//         return;
+//       }
+
+//       if (resolve(args[0]) === resolve(basePath)) {
+//         cb(results.concat(modules));
+//         return;
+//       }
+//       cb(results);
+//     });
+//   };
+// }

@@ -9,6 +9,7 @@ import {
   HtmlManager,
   HtmlContext,
   stream,
+  render as renderHtml,
 } from '@shopify/react-html/server';
 import {useSerialized} from '@shopify/react-html';
 import {
@@ -49,6 +50,7 @@ type Options = Pick<
 > & {
   assetPrefix?: string;
   assetName?: string | ValueFromContext<string>;
+  renderError?: any;
 };
 
 /**
@@ -58,7 +60,11 @@ type Options = Pick<
  */
 export function createRender(render: RenderFunction, options: Options = {}) {
   const manifestPath = getManifestPath(process.cwd());
-  const {assetPrefix, assetName: assetNameInput = 'main'} = options;
+  const {
+    assetPrefix,
+    assetName: assetNameInput = 'main',
+    renderError,
+  } = options;
 
   async function renderFunction(ctx: Context) {
     const assetName =
@@ -93,6 +99,7 @@ export function createRender(render: RenderFunction, options: Options = {}) {
     }
 
     try {
+      // throw new Error('foo');
       const app = render(ctx);
       await extract(app, {
         decorate(element) {
@@ -134,19 +141,66 @@ export function createRender(render: RenderFunction, options: Options = {}) {
       ctx.set(Header.ContentType, 'text/html');
       ctx.body = response;
     } catch (error) {
+      console.log('~~~~~~~~~renderError from render.tsx: ', renderError);
+      const errorPage = renderError(ctx);
+      // await extract(errorPage, {
+      //   decorate(element) {
+      //     return (
+      //       <HtmlContext.Provider value={htmlManager}>
+      //         <Providers>{element}</Providers>
+      //       </HtmlContext.Provider>
+      //     );
+      //   },
+      //   afterEachPass({renderDuration, resolveDuration, index, finished}) {
+      //     const pass = `Pass number ${index} ${
+      //       finished ? ' (this was the final pass)' : ''
+      //     }`;
+      //     const rendering = `Rendering took ${renderDuration}ms`;
+      //     const resolving = `Resolving promises took ${resolveDuration}ms`;
+
+      //     logger.log(pass);
+      //     logger.log(rendering);
+      //     logger.log(resolving);
+      //   },
+      //   ...options,
+      // });
+
       const errorMessage = `React server-side rendering error:\n${
         error.stack || error.message
       }`;
 
       logger.log(errorMessage);
+      logger.log('~~~~~~~~~~~~~~~~~~~~~ error');
+      logger.log('@@~~~~~~~~~~~~~~~~~~~~~ ssrError: ');
+      // logger.log(errorPage);
+
+      // const immediateAsyncAssets = asyncAssetManager.used(
+      //   AssetTiming.Immediate,
+      // );
+      const [styles, scripts] = await Promise.all([
+        assets.styles({name: 'error'}),
+        assets.scripts({name: 'error'}),
+      ]);
+
+      console.log('styles: ', styles);
+      console.log('scripts: ', scripts);
+
+      // const response = renderHtml(<>{errorPage}</>);
+      const response = renderHtml(
+        <Html manager={htmlManager} styles={styles} scripts={scripts}>
+          {errorPage}
+        </Html>,
+      );
+      logger.log(response);
+      ctx.body = response;
       ctx.status = StatusCode.InternalServerError;
 
       // eslint-disable-next-line no-process-env
-      if (process.env.NODE_ENV === 'development') {
-        ctx.body = errorMessage;
-      } else {
-        ctx.throw(StatusCode.InternalServerError, error);
-      }
+      // if (process.env.NODE_ENV === 'development') {
+      //   ctx.body = errorMessage;
+      // } else {
+      //   ctx.throw(StatusCode.InternalServerError, error);
+      // }
     }
   }
 
