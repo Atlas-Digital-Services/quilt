@@ -136,6 +136,10 @@ describe('useForm', () => {
     wrapper.find('button', {type: 'reset'})!.trigger('onClick', clickEvent());
   }
 
+  function hitClean(wrapper) {
+    wrapper.find('button', {type: 'button'})!.trigger('onClick', clickEvent());
+  }
+
   describe('dirty state', () => {
     it('dirty state is false when no field has been changed', () => {
       const wrapper = mount(<ProductForm data={fakeProduct()} />);
@@ -400,16 +404,45 @@ describe('useForm', () => {
       const wrapper = mount(<ProductForm data={fakeProduct()} />);
 
       const initialResetHandler = wrapper
-        .find('button', {type: 'button'})!
+        .find('button', {type: 'reset'})!
         .prop('onClick');
 
       changeTitle(wrapper, 'tortoritos, the chip for turtles!');
 
       const newResetHandler = wrapper
-        .find('button', {type: 'button'})!
+        .find('button', {type: 'reset'})!
         .prop('onClick');
 
       expect(initialResetHandler).toBe(newResetHandler);
+    });
+  });
+
+  describe('makeClean', () => {
+    it(`cleans the form's dirty state`, () => {
+      const wrapper = mount(<ProductForm data={fakeProduct()} />);
+      const newProduct = 'Submarine full of gnomes';
+
+      changeTitle(wrapper, 'tortoritos, the chip for turtles!');
+
+      hitClean(wrapper);
+
+      expect(isDirty(wrapper)).toBe(false);
+    });
+
+    it('does not create a new makeClean function on each render', () => {
+      const wrapper = mount(<ProductForm data={fakeProduct()} />);
+
+      const initialMakeCleanHandler = wrapper
+        .find('button', {type: 'button'})!
+        .prop('onClick');
+
+      changeTitle(wrapper, 'tortoritos, the chip for turtles!');
+
+      const newMakeCleanHandler = wrapper
+        .find('button', {type: 'button'})!
+        .prop('onClick');
+
+      expect(initialMakeCleanHandler).toBe(newMakeCleanHandler);
     });
   });
 });
