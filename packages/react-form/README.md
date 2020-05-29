@@ -63,6 +63,7 @@ function MyComponent() {
     dirty,
     reset,
     submitErrors,
+    makeClean,
   } = useForm({
     fields: {
       title: useField('some default title'),
@@ -125,7 +126,15 @@ import {
 } from '@shopify/polaris';
 
 export default function MyComponent() {
-  const {fields, submit, submitting, dirty, reset, submitErrors} = useForm({
+  const {
+    fields,
+    submit,
+    submitting,
+    dirty,
+    reset,
+    submitErrors,
+    makeClean,
+  } = useForm({
     fields: {
       title: useField({
         value: '',
@@ -594,7 +603,7 @@ const form = useForm(config);
 
 ###### Return value:
 
-An object representing the current state of the form, with imperative methods to reset, submit, and validate. Generally, the returned properties correspond 1:1 with the specific hook for their functionality.
+An object representing the current state of the form, with imperative methods to reset, submit, validate, and clean. Generally, the returned properties correspond 1:1 with the specific hook/utility for their functionality.
 
 #### Examples
 
@@ -612,6 +621,7 @@ function MyComponent() {
     dirty,
     reset,
     submitErrors,
+    makeClean,
   } = useForm({
     fields: {
       title: useField('some default title'),
@@ -676,7 +686,15 @@ import {
 import {useField, useForm} from '@shopify/react-form';
 
 function MyComponent() {
-  const {fields, submit, submitting, dirty, reset, submitErrors} = useForm({
+  const {
+    fields,
+    submit,
+    submitting,
+    dirty,
+    reset,
+    submitErrors,
+    makeClean,
+  } = useForm({
     fields: {
       title: useField('some default title'),
       description: useField('some default description'),
@@ -774,7 +792,7 @@ function MyComponent() {
     [title.value],
   );
 
-  const {submit, submitting, dirty, reset, submitErrors} = useForm({
+  const {submit, submitting, dirty, reset, submitErrors, makeClean} = useForm({
     fields: {title, description},
     onSubmit: async fieldValues => {
       return {status: 'fail', errors: [{message: 'bad form data'}]};
@@ -885,7 +903,7 @@ A value returned by `reduceFn` iterating through all the fields in the form, and
 
 ##### Examples
 
-Here is how to calculate if the entire form is dirty
+Here is how to calculate if the entire form is dirty (though in practice you could use `useDirty` to the same effect):
 
 ```tsx
 const {fields} = useForm(/* ... */);
@@ -917,7 +935,7 @@ Field values from the form.
 
 ##### Examples
 
-Here is how to calculate if the entire form is dirty
+Here is how to get the values from a nested field object:
 
 ```tsx
 const {fields} = useForm({
