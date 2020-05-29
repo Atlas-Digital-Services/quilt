@@ -9,8 +9,8 @@ and adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Add optional `undirtyAfterSubmit` param to both `useSubmit` and `useForm` config (defaults to `false`)
-- Provide `undirtyFields` utility for other use cases
+- Add optional `makeCleanAfterSubmit` param to both `useSubmit` and `useForm` config (defaults to `false`)
+- Provide `makeCleanFields` utility for other use cases
 
 ## [0.6.0] - 2020-04-23
 

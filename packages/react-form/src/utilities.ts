@@ -206,6 +206,6 @@ export function defaultDirtyComparator<Value>(
     : defaultValue !== newValue;
 }
 
-export function undirtyFields(fieldBag: FieldBag) {
+export function makeCleanFields(fieldBag: FieldBag) {
   reduceFields(fieldBag, (_, field) => field.newDefaultValue(field.value));
 }

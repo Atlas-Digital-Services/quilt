@@ -12,13 +12,13 @@ import {
   propagateErrors,
   validateAll,
   getValues,
-  undirtyFields,
+  makeCleanFields,
 } from '../utilities';
 
 export function useSubmit<T extends FieldBag>(
   onSubmit: SubmitHandler<FormMapping<T, 'value'>> = noopSubmission,
   fieldBag: T,
-  undirtyAfterSubmit = false,
+  makeCleanAfterSubmit = false,
 ) {
   const mounted = useMountedRef();
   const [submitting, setSubmitting] = useState(false);
@@ -60,11 +60,11 @@ export function useSubmit<T extends FieldBag>(
         setSubmitErrors([]);
       }
 
-      if (undirtyAfterSubmit) {
-        undirtyFields(fields);
+      if (makeCleanAfterSubmit) {
+        makeCleanFields(fields);
       }
     },
-    [mounted, onSubmit, setErrors, undirtyAfterSubmit],
+    [mounted, onSubmit, setErrors, makeCleanAfterSubmit],
   );
 
   return {submit, submitting, errors: submitErrors, setErrors};

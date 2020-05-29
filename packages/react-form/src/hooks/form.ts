@@ -59,18 +59,18 @@ import {useSubmit} from './submit';
 export function useForm<T extends FieldBag>({
   fields,
   onSubmit,
-  undirtyAfterSubmit = false,
+  makeCleanAfterSubmit = false,
 }: {
   fields: T;
   onSubmit?: SubmitHandler<FormMapping<T, 'value'>>;
-  undirtyAfterSubmit?: boolean;
+  makeCleanAfterSubmit?: boolean;
 }): Form<T> {
   const dirty = useDirty(fields);
   const basicReset = useReset(fields);
   const {submit, submitting, errors, setErrors} = useSubmit(
     onSubmit,
     fields,
-    undirtyAfterSubmit,
+    makeCleanAfterSubmit,
   );
 
   const reset = useCallback(() => {

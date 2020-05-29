@@ -27,11 +27,11 @@ describe('useForm', () => {
   function ProductForm({
     data,
     onSubmit,
-    undirtyAfterSubmit,
+    makeCleanAfterSubmit,
   }: {
     data: SimpleProduct;
     onSubmit?: SubmitHandler<SimpleProduct>;
-    undirtyAfterSubmit?: boolean;
+    makeCleanAfterSubmit?: boolean;
   }) {
     const title = useField({
       value: data.title,
@@ -58,7 +58,7 @@ describe('useForm', () => {
     const {submit, submitting, dirty, reset, submitErrors} = useForm({
       fields: {title, description, defaultVariant, variants},
       onSubmit: onSubmit as any,
-      undirtyAfterSubmit,
+      makeCleanAfterSubmit,
     });
 
     return (
@@ -333,7 +333,7 @@ describe('useForm', () => {
       expect(initialSubmitHandler).toBe(newSubmitHandler);
     });
 
-    describe('undirty', () => {
+    describe('makeClean', () => {
       it('does not undirty fields after successful submit by default', async () => {
         const promise = Promise.resolve(submitSuccess());
         const wrapper = mount(<ProductForm data={fakeProduct()} />);
@@ -368,10 +368,10 @@ describe('useForm', () => {
         });
       });
 
-      it('does undirty fields after successful submit if undirtyAfterSubmit is true', async () => {
+      it('does undirty fields after successful submit if makeCleanAfterSubmit is true', async () => {
         const promise = Promise.resolve(submitSuccess());
         const wrapper = mount(
-          <ProductForm data={fakeProduct()} undirtyAfterSubmit />,
+          <ProductForm data={fakeProduct()} makeCleanAfterSubmit />,
         );
 
         wrapper
@@ -404,10 +404,10 @@ describe('useForm', () => {
         });
       });
 
-      it('does not undirty fields after successful submit if undirtyAfterSubmit is false', async () => {
+      it('does not undirty fields after successful submit if makeCleanAfterSubmit is false', async () => {
         const promise = Promise.resolve(submitSuccess());
         const wrapper = mount(
-          <ProductForm data={fakeProduct()} undirtyAfterSubmit={false} />,
+          <ProductForm data={fakeProduct()} makeCleanAfterSubmit={false} />,
         );
 
         wrapper
@@ -440,10 +440,10 @@ describe('useForm', () => {
         });
       });
 
-      it('does not undirty fields after if undirtyAfterSubmit is true but submit is unsuccessful', async () => {
+      it('does not undirty fields after if makeCleanAfterSubmit is true but submit is unsuccessful', async () => {
         const promise = Promise.resolve(submitFail());
         const wrapper = mount(
-          <ProductForm data={fakeProduct()} undirtyAfterSubmit={false} />,
+          <ProductForm data={fakeProduct()} makeCleanAfterSubmit={false} />,
         );
 
         wrapper.find(TextField, {label: 'title'})!.trigger('onChange', '');

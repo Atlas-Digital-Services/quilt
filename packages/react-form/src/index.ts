@@ -22,5 +22,5 @@ export {
   propagateErrors,
   validateAll,
   reduceFields,
-  undirtyFields,
+  makeCleanFields,
 } from './utilities';
